@@ -7,6 +7,15 @@ The implementation focuses on a decoupled architecture, leveraging modern stream
 
 ---
 
+## 🎥 Pipeline in Action
+
+
+https://github.com/user-attachments/assets/0991dc94-9c29-4a50-b3cf-a3cd707a33e3
+
+
+
+---
+
 ## System Architecture
 The pipeline is designed using a multi-layered approach to ensure reliability and schema consistency across the flow.
 
