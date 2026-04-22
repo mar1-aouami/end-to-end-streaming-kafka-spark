@@ -1,0 +1,75 @@
+x-spark-common: &spark-common
+  image: public.ecr.aws/bitnami/spark:3.5.0  
+  volumes:
+    - ./jobs:/opt/bitnami/spark/jobs
+  command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+  depends_on:
+    - spark-master
+  environment:
+    SPARK_MODE: Worker 
+    SPARK_WORKER_CORES: 2 
+    SPARK_WORKER_MEMORY: 1g
+    SPARK_MASTER_URL: spark://spark-master:7077
+
+    SPARK_SUBMIT_PACKAGES: "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0,org.apache.hadoop:hadoop-aws:3.3.1,com.amazonaws:aws-java-sdk-bundle:1.11.469"
+  networks:
+    - datamasterylab
+
+services:
+  broker:
+    image: confluentinc/cp-kafka:7.6.0
+    hostname: broker
+    container_name: broker
+    ports:
+      - "9092:9092"
+      - "9101:9101"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@broker:29093'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+      KAFKA_LISTENERS: 'PLAINTEXT://broker:29092,CONTROLLER://broker:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: 9101
+      CONFLUENT_METRICS_ENABLE: 'false'
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - datamasterylab
+
+  spark-master:
+    image: public.ecr.aws/bitnami/spark:3.5.0
+    container_name: spark-master
+    volumes:
+      - ./jobs:/opt/bitnami/spark/jobs
+    command: bin/spark-class org.apache.spark.deploy.master.Master
+    environment:
+      
+      SPARK_SUBMIT_PACKAGES: "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0,org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.262"
+    ports:
+      - "9090:8080"
+      - "7077:7077"
+    networks:
+      - datamasterylab
+
+  spark-worker-1:
+    <<: *spark-common
+    container_name: spark-worker-1
+
+  spark-worker-2:
+    <<: *spark-common
+    container_name: spark-worker-2
+
+networks:
+  datamasterylab:
+    driver: bridge
