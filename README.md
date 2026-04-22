@@ -10,24 +10,22 @@ The implementation focuses on a decoupled architecture, leveraging modern stream
 ## System Architecture
 The pipeline is designed using a multi-layered approach to ensure reliability and schema consistency across the flow.
 
-
-
 ### 1. Ingestion Layer
 - **Producer:** Python-based simulation engine generating JSON-encoded IoT events.
-- **Message Broker:** Apache Kafka running in **KRaft Mode**. The removal of Zookeeper simplifies the metadata management and improves cluster startup performance.
+- **Message Broker:** Apache Kafka running in **KRaft Mode**. The removal of Zookeeper simplifies metadata management and improves cluster performance.
 
 ### 2. Processing Layer
 - **Stream Processing:** Apache Spark Structured Streaming.
-- **Fault Tolerance:** Implemented through Checkpointing on S3 and **Watermarking** to handle late-arriving events and maintain stateful aggregations.
-- **Schema Enforcement:** Strict StructType definitions are applied to ensure data quality before persistence.
+- **Fault Tolerance:** Implemented through Checkpointing on S3 and **Watermarking** to handle late-arriving events.
+- **Schema Enforcement:** Strict StructType definitions are applied to ensure data quality.
 
 ### 3. Storage Layer (Data Lake)
 - **Sink:** Amazon S3.
-- **Format:** Data is persisted in **Parquet** (Columnar format) to optimize storage costs and enhance query performance for downstream analytics.
+- **Format:** Data is persisted in **Parquet** (Columnar format) to optimize storage costs and query performance.
 
 ### 4. Cataloging & Analytics
-- **Metadata Management:** AWS Glue Crawlers for automated schema discovery and Data Catalog maintenance.
-- **Query Engine:** Amazon Athena (Serverless SQL) providing an ad-hoc query interface over the S3 Data Lake.
+- **Metadata Management:** AWS Glue Crawlers for automated schema discovery.
+- **Query Engine:** Amazon Athena (Serverless SQL) for ad-hoc queries over the S3 Data Lake.
 - **Business Intelligence:** Power BI connected via ODBC for real-time dashboarding.
 
 ---
@@ -44,7 +42,8 @@ The pipeline is designed using a multi-layered approach to ensure reliability an
 ## Repository Structure
 ```text
 .
-├── jobs/
-│   ├── main.py              # Spark Structured Streaming application
-│   └── spark-city.py        # IoT data generation & Kafka producer
-├── docker-compose.yml       # Infrastructure orchestration
+├── .gitignore
+├── README.md
+├── docker-compose.yml       # Infrastructure orchestration (Kafka & Spark)
+├── main.py                  # Spark Structured Streaming application
+└── spark-city.py            # IoT data generation & Kafka producer
